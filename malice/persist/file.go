@@ -95,7 +95,7 @@ func GetMimeType(docker *client.Docker, arg string) (string, error) {
 	}
 	networkingConfig := &network.NetworkingConfig{}
 
-	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, "getmimetype")
+	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, nil, "getmimetype")
 	if err != nil {
 		return "", err
 	}
@@ -171,7 +171,7 @@ func GetFileInfo(docker *client.Docker, arg string, search string) (string, erro
 	}
 	networkingConfig := &network.NetworkingConfig{}
 
-	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, "")
+	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, nil, "")
 	if err != nil {
 		return "", err
 	}

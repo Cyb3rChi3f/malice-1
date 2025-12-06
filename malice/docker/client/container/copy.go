@@ -126,7 +126,7 @@ func resolveLocalPath(localPath string) (absPath string, err error) {
 		return
 	}
 
-	return archive.PreserveTrailingDotOrSeparator(absPath, localPath), nil
+	return archive.PreserveTrailingDotOrSeparator(absPath, localPath, filepath.Separator), nil
 }
 
 func statContainerPath(docker *client.Docker, containerName, path string) (types.ContainerPathStat, error) {

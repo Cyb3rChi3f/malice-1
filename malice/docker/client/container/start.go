@@ -56,7 +56,7 @@ func Start(
 		}
 		networkingConfig := &network.NetworkingConfig{}
 
-		contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, name)
+		contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, nil, name)
 		if err != nil {
 			log.WithFields(log.Fields{"env": config.Conf.Environment.Run}).Errorf("CreateContainer error = %s\n", err)
 		}

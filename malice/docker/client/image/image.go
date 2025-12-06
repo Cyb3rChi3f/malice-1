@@ -96,10 +96,7 @@ func Build(docker *client.Docker, repository string, tags []string, buildArgs ma
 
 	if buildCtx == nil {
 		// And canonicalize dockerfile name to a platform-independent one
-		relDockerfile, err = archive.CanonicalTarNameForPath(relDockerfile)
-		if err != nil {
-			log.Fatalf("cannot canonicalize dockerfile path %s: %v", relDockerfile, err)
-		}
+		relDockerfile = archive.CanonicalTarNameForPath(relDockerfile)
 
 		f, err := os.Open(filepath.Join(contextDir, ".dockerignore"))
 		if err != nil && !os.IsNotExist(err) {
@@ -142,7 +139,7 @@ func Build(docker *client.Docker, repository string, tags []string, buildArgs ma
 	}
 
 	// Setup an upload progress bar
-	progressOutput := streamformatter.NewStreamFormatter().NewProgressOutput(progBuff, true)
+	progressOutput := streamformatter.NewJSONProgressOutput(progBuff, true)
 
 	var body io.Reader = progress.NewProgressReader(buildCtx, progressOutput, 0, "", "Sending build context to Docker daemon")
 
