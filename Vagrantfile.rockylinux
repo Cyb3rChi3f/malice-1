@@ -1,0 +1,168 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Rocky Linux 8.10 Vagrant configuration for Malice
+# This Vagrantfile is optimized for Rocky Linux 8.10 (RHEL-based)
+
+Vagrant.configure("2") do |config|
+  # Rocky Linux 8 base box
+  config.vm.box = "rockylinux/8"
+
+  # vagrant plugin install vagrant-disksize
+  config.disksize.size = '25GB'
+
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  # config.vm.box_check_update = false
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine.
+  config.vm.network "forwarded_port", guest: 2345, host: 2345
+  config.vm.network "forwarded_port", guest: 9200, host: 9200
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  # config.vm.network "public_network"
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  # Example for VirtualBox:
+
+  config.vm.provider "virtualbox" do |vb|
+    # Display the VirtualBox GUI when booting the machine
+    vb.gui = false
+    vb.name = "malice-rocky-box"
+    # Customize the amount of memory on the VM:
+    vb.memory = "4096"
+    vb.cpus = 2
+  end
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "===================================================="
+    echo "Rocky Linux 8 Malice Development Environment Setup"
+    echo "===================================================="
+
+    echo "Updating system packages =========================="
+    sudo dnf update -y
+    sudo dnf install -y ca-certificates curl wget tar
+
+    echo "Installing Docker =================================="
+    # Remove old Docker versions if present
+    sudo dnf remove -y docker docker-client docker-client-latest docker-common \
+                       docker-latest docker-latest-logrotate docker-logrotate docker-engine
+
+    # Add Docker CE repository
+    sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+    # Install Docker CE
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    # Start and enable Docker
+    sudo systemctl start docker
+    sudo systemctl enable docker
+
+    # Add vagrant user to docker group
+    sudo usermod -aG docker vagrant
+
+    # Configure SELinux for Docker socket access
+    echo "Configuring SELinux for Docker ===================="
+    sudo setsebool -P container_manage_cgroup on
+    # Allow docker socket access for docker group members
+    sudo chcon -t container_file_t /var/run/docker.sock
+
+    echo "Installing docker-compose (standalone) ============"
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+
+    echo "Installing docker-clean ============================"
+    curl -s https://raw.githubusercontent.com/ZZROTDesign/docker-clean/v2.0.4/docker-clean | sudo tee /usr/local/bin/docker-clean > /dev/null
+    sudo chmod +x /usr/local/bin/docker-clean
+
+    echo "Installing Golang =================================="
+    export GO_VERSION=1.21.5
+    export ARCH="$(uname -m)"
+    # Convert architecture naming (x86_64 -> amd64)
+    if [ "$ARCH" = "x86_64" ]; then
+      ARCH="amd64"
+    fi
+    wget https://go.dev/dl/go$GO_VERSION.linux-$ARCH.tar.gz -O /tmp/go.tar.gz
+    sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+
+    # Set up Go environment for vagrant user
+    export PATH=$PATH:/usr/local/go/bin
+    export GOPATH=/home/vagrant/go
+    echo 'export PATH=$PATH:/usr/local/go/bin' >> /home/vagrant/.bashrc
+    echo 'export GOPATH=/home/vagrant/go' >> /home/vagrant/.bashrc
+    echo 'export PATH=$PATH:/home/vagrant/go/bin' >> /home/vagrant/.bashrc
+    mkdir -p /home/vagrant/go/src/github.com/maliceio/malice
+    chown -R vagrant:vagrant /home/vagrant/go
+
+    echo "Installing Malice build dependencies =============="
+    # Install development tools for Rocky Linux
+    sudo dnf groupinstall -y "Development Tools"
+    sudo dnf install -y file-devel gcc make cmake gcc-c++
+
+    echo "Building Malice from source ========================"
+    # Clone malice repository
+    cd /home/vagrant/go/src/github.com/maliceio
+    if [ ! -d "malice" ]; then
+      sudo -H -u vagrant git clone https://github.com/maliceio/malice.git
+    fi
+    cd malice
+
+    # Download Go dependencies
+    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/go mod download'
+
+    # Build malice binary
+    echo "Building malice binary ============================="
+    sudo -H -u vagrant bash -c 'cd /home/vagrant/go/src/github.com/maliceio/malice && GOPATH=/home/vagrant/go /usr/local/go/bin/go build -o /home/vagrant/go/bin/malice'
+
+    # Install malice binary system-wide
+    sudo cp /home/vagrant/go/bin/malice /usr/local/bin/malice
+    sudo chmod +x /usr/local/bin/malice
+
+    echo "Configuring Elasticsearch requirements ============"
+    # Elasticsearch requires vm.max_map_count to be at least 262144
+    echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+    sudo sysctl -w vm.max_map_count=262144
+
+    echo "Installing Go development tools ===================="
+    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/go install github.com/go-delve/delve/cmd/dlv@latest'
+
+    echo "Setting correct ownership =========================="
+    sudo chown -R vagrant:vagrant /home/vagrant/go
+
+    echo "===================================================="
+    echo "Installation complete!"
+    echo "===================================================="
+    echo ""
+    echo "To use this environment:"
+    echo "  1. Run: vagrant ssh"
+    echo "  2. Docker is ready to use: docker ps"
+    echo "  3. Malice is installed: malice --help"
+    echo "  4. To start Elasticsearch stack: cd /vagrant && docker-compose up -d"
+    echo ""
+    echo "Note: You may need to log out and back in for docker"
+    echo "      group membership to take effect."
+    echo ""
+    echo "SELinux is enabled in enforcing mode."
+    echo "If you encounter permission issues, check: sudo ausearch -m avc"
+    echo "===================================================="
+  SHELL
+end
