@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/docker/docker/api/server/httputils"
-	"golang.org/x/net/context"
+	"context"
 )
 
 // RouteWrapper wraps a route with extra functionality.

@@ -14,7 +14,7 @@ import (
 	"github.com/docker/docker/registry"
 	"github.com/maliceio/malice/malice/docker/client"
 	er "github.com/maliceio/malice/malice/errors"
-	"golang.org/x/net/context"
+	"context"
 )
 
 func pullImage(ctx context.Context, docker *client.Docker, image string, out io.Writer) error {

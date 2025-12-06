@@ -5,9 +5,9 @@ package docker
 // 	"os/exec"
 // 	"runtime"
 
-// 	"golang.org/x/net/context"
+// 	"context"
 
-// 	log "github.com/Sirupsen/logrus"
+// 	log "github.com/sirupsen/logrus"
 // 	docker "github.com/docker/docker/client"
 // 	"github.com/maliceio/malice/config"
 // )

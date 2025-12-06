@@ -11,14 +11,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/crackcomm/go-clitable"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -61,7 +60,7 @@ func (file *File) Init() {
 	file.GetSize()
 
 	// Read in file data
-	dat, err := ioutil.ReadFile(file.Path)
+	dat, err := os.ReadFile(file.Path)
 	utils.Assert(err)
 
 	file.GetMD5(dat)
@@ -237,7 +236,7 @@ func (file *File) CopyToSamples() error {
 
 	// Make .malice directory if it doesn't exist
 	if _, err := os.Stat(maldirs.GetSampledsDir()); os.IsNotExist(err) {
-		os.MkdirAll(maldirs.GetSampledsDir(), 0777)
+		os.MkdirAll(maldirs.GetSampledsDir(), 0700)
 	}
 
 	if _, err := os.Stat(path.Join(maldirs.GetSampledsDir(), file.SHA256)); os.IsNotExist(err) {

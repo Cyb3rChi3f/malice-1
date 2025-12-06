@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"golang.org/x/net/context"
+	"context"
 
 	"regexp"
 
@@ -29,7 +29,7 @@ import (
 	"github.com/maliceio/malice/malice/docker/client"
 	er "github.com/maliceio/malice/malice/errors"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Pull pulls docker image:tag

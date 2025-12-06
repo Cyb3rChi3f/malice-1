@@ -2,13 +2,12 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	er "github.com/maliceio/malice/malice/errors"
 	"github.com/maliceio/malice/malice/maldirs"
 	"github.com/maliceio/malice/utils"
@@ -108,7 +107,7 @@ func UpdateConfig() error {
 	}
 	if _, err = toml.Decode(string(tomlData), &Conf); err == nil {
 		// Update the config config in the .malice folder
-		er.CheckError(ioutil.WriteFile(configPath, tomlData, 0644))
+		er.CheckError(os.WriteFile(configPath, tomlData, 0644))
 		log.Debug("Malice config loaded from config/bindata.go")
 	}
 	return err
@@ -142,9 +141,9 @@ func loadFromBinary(configPath string) {
 	}
 	if _, err = toml.Decode(string(tomlData), &Conf); err == nil {
 		// Create .malice folder in the users home directory
-		er.CheckError(os.MkdirAll(maldirs.GetConfigDir(), 0777))
+		er.CheckError(os.MkdirAll(maldirs.GetConfigDir(), 0700))
 		// Create the config config in the .malice folder
-		er.CheckError(ioutil.WriteFile(configPath, tomlData, 0644))
+		er.CheckError(os.WriteFile(configPath, tomlData, 0644))
 		log.Debug("Malice config loaded from config/bindata.go")
 	}
 	er.CheckError(err)

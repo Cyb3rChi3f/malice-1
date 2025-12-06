@@ -10,7 +10,7 @@ import (
 	"github.com/docker/docker/api/server/httputils"
 	"github.com/docker/docker/api/server/middleware"
 
-	"golang.org/x/net/context"
+	"context"
 )
 
 func TestMiddlewares(t *testing.T) {

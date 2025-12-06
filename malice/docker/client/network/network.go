@@ -6,11 +6,11 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/maliceio/malice/config"
 	"github.com/maliceio/malice/malice/docker/client"
-	"golang.org/x/net/context"
+	"context"
 
 	"regexp"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Exists returns type.NetworkResource and true

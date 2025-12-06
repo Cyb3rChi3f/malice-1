@@ -3,14 +3,14 @@ package volume
 import (
 	"regexp"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	volumetypes "github.com/docker/docker/api/types/volume"
 	runconfigopts "github.com/docker/docker/runconfig/opts"
 	"github.com/maliceio/malice/config"
 	"github.com/maliceio/malice/malice/docker/client"
-	"golang.org/x/net/context"
+	"context"
 )
 
 // Exists returns type.Volume and true

@@ -3,16 +3,14 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
 
-	"os"
-
 	"github.com/BurntSushi/toml"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/docker/docker/api/types/strslice"
 	runconfigopts "github.com/docker/docker/runconfig/opts"
 	"github.com/malice-plugins/pkgs/utils"
@@ -199,7 +197,7 @@ func DeletePlugin(name string) error {
 
 	// open plugin config file
 	configPath := path.Join(maldirs.GetPluginsDir(), "./plugins.toml")
-	err := ioutil.WriteFile(configPath, buf.Bytes(), 0644)
+	err := os.WriteFile(configPath, buf.Bytes(), 0644)
 	return err
 }
 

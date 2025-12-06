@@ -14,7 +14,7 @@ import (
 
 	"github.com/maliceio/malice/malice/docker/client"
 	er "github.com/maliceio/malice/malice/errors"
-	"golang.org/x/net/context"
+	"context"
 )
 
 type runOptions struct {
