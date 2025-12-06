@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/BurntSushi/toml v1.3.2
+	github.com/containerd/containerd v1.7.22 // Constrain to version compatible with Go 1.22
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200916142827-bd33bbf0497b+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/dustin/go-jsonpointer v0.0.0-20160814072949-ba0abeacc3dc
@@ -22,7 +23,14 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
-// Exclude problematic versions that require Go >= 1.24
+// Exclude problematic versions that require newer Go versions
 exclude (
 	github.com/opencontainers/runc v1.4.0
+	github.com/containerd/containerd v1.7.23
+	github.com/containerd/containerd v1.7.24
+	github.com/containerd/containerd v1.7.25
+	github.com/containerd/containerd v1.7.26
+	github.com/containerd/containerd v1.7.27
+	github.com/containerd/containerd v1.7.28
+	github.com/containerd/containerd v1.7.29
 )
