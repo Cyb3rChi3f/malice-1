@@ -18,7 +18,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/crackcomm/go-clitable"
+	"github.com/olekukonko/tablewriter"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -386,37 +386,45 @@ func (file *File) ToJSON() []byte {
 // ToMarkdownTable converts File object Markdown table
 func (file *File) ToMarkdownTable() {
 	fmt.Println("#### File")
-	table := clitable.New([]string{"Field", "Value"})
-	table.AddRow(map[string]interface{}{"Field": "Name", "Value": file.Name})
-	table.AddRow(map[string]interface{}{"Field": "Path", "Value": file.Path})
-	table.AddRow(map[string]interface{}{"Field": "Size", "Value": file.Size})
-	table.AddRow(map[string]interface{}{"Field": "MD5", "Value": file.MD5})
-	table.AddRow(map[string]interface{}{"Field": "SHA1", "Value": file.SHA1})
-	table.AddRow(map[string]interface{}{"Field": "SHA256", "Value": file.SHA256})
-	// table.AddRow(map[string]interface{}{"Field": "SHA512", "Value": file.SHA512})
-	// table.AddRow(map[string]interface{}{"Field": "Mime", "Value": file.Mime})
-	// table.AddRow(map[string]interface{}{"Field": "Magic", "Value": file.Magic})
-	table.Markdown = true
-	table.Print()
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Field", "Value"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+
+	table.Append([]string{"Name", file.Name})
+	table.Append([]string{"Path", file.Path})
+	table.Append([]string{"Size", file.Size})
+	table.Append([]string{"MD5", file.MD5})
+	table.Append([]string{"SHA1", file.SHA1})
+	table.Append([]string{"SHA256", file.SHA256})
+	// table.Append([]string{"SHA512", file.SHA512})
+	// table.Append([]string{"Mime", file.Mime})
+	// table.Append([]string{"Magic", file.Magic})
+
+	table.Render()
 }
 
 // PrintFileDetails prints file details
 func (file *File) PrintFileDetails() {
-	table := clitable.New([]string{"Field", "Value"})
-	table.AddRow(map[string]interface{}{"Field": "Name", "Value": file.Name})
-	table.AddRow(map[string]interface{}{"Field": "Path", "Value": file.Path})
-	// table.AddRow(map[string]interface{}{"Field": "Valid", "Value": file.Valid})
-	table.AddRow(map[string]interface{}{"Field": "Size", "Value": file.Size})
-	// table.AddRow(map[string]interface{}{"Field": "CRC32", "Value": file.CRC32})
-	table.AddRow(map[string]interface{}{"Field": "MD5", "Value": file.MD5})
-	table.AddRow(map[string]interface{}{"Field": "SHA1", "Value": file.SHA1})
-	table.AddRow(map[string]interface{}{"Field": "SHA256", "Value": file.SHA256})
-	table.AddRow(map[string]interface{}{"Field": "SHA512", "Value": file.SHA512})
-	// table.AddRow(map[string]interface{}{"Field": "Ssdeep", "Value": file.Ssdeep})
-	// table.AddRow(map[string]interface{}{"Field": "Mime", "Value": file.Mime})
-	// table.AddRow(map[string]interface{}{"Field": "Magic", "Value": file.Magic})
-	table.Markdown = true
-	table.Print()
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Field", "Value"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+
+	table.Append([]string{"Name", file.Name})
+	table.Append([]string{"Path", file.Path})
+	// table.Append([]string{"Valid", fmt.Sprintf("%v", file.Valid)})
+	table.Append([]string{"Size", file.Size})
+	// table.Append([]string{"CRC32", file.CRC32})
+	table.Append([]string{"MD5", file.MD5})
+	table.Append([]string{"SHA1", file.SHA1})
+	table.Append([]string{"SHA256", file.SHA256})
+	table.Append([]string{"SHA512", file.SHA512})
+	// table.Append([]string{"Ssdeep", file.Ssdeep})
+	// table.Append([]string{"Mime", file.Mime})
+	// table.Append([]string{"Magic", file.Magic})
+
+	table.Render()
 	// fmt.Println("Name: ", file.Name)
 	// fmt.Println("Path: ", file.Path)
 	// fmt.Println("Valid: ", file.Valid)

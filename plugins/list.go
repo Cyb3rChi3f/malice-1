@@ -2,9 +2,10 @@ package plugins
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
-	"github.com/crackcomm/go-clitable"
+	"github.com/olekukonko/tablewriter"
 	"github.com/maliceio/malice/utils"
 )
 
@@ -35,19 +36,23 @@ func ListAllPlugins(detail bool) {
 
 // ToMarkDownTable prints plugins out as Markdown table
 func ToMarkDownTable(plugins []Plugin) {
-	table := clitable.New([]string{"Name", "Description", "Enabled", "Image", "Category", "Mime"})
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Name", "Description", "Enabled", "Image", "Category", "Mime"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+
 	for _, plugin := range plugins {
-		table.AddRow(map[string]interface{}{
-			"Name":        plugin.Name,
-			"Description": plugin.Description,
-			"Enabled":     plugin.Enabled,
-			"Image":       plugin.Image,
-			"Category":    plugin.Category,
-			"Mime":        plugin.Mime,
+		table.Append([]string{
+			plugin.Name,
+			plugin.Description,
+			fmt.Sprintf("%v", plugin.Enabled),
+			plugin.Image,
+			plugin.Category,
+			plugin.Mime,
 		})
 	}
-	table.Markdown = true
-	table.Print()
+
+	table.Render()
 }
 
 // GetPluginByName will return plugin for the given name
