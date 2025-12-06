@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/malice-plugins/pkgs v1.1.7
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/opencontainers/runc v1.1.12 // Constrain to version compatible with Go 1.21
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
@@ -19,4 +20,9 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/urfave/cli v1.22.14
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
+)
+
+// Exclude problematic versions that require Go >= 1.24
+exclude (
+	github.com/opencontainers/runc v1.4.0
 )
