@@ -34,3 +34,9 @@ exclude (
 	github.com/containerd/containerd v1.7.28
 	github.com/containerd/containerd v1.7.29
 )
+
+// Replace directives to use compatible Docker library version
+// The old v17.12.0 has packages that have been moved in newer versions
+replace (
+	github.com/docker/docker => github.com/docker/docker v20.10.27+incompatible
+)
