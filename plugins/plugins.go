@@ -12,7 +12,7 @@ import (
 	"github.com/BurntSushi/toml"
 	log "github.com/sirupsen/logrus"
 	"github.com/docker/docker/api/types/strslice"
-	runconfigopts "github.com/docker/docker/runconfig/opts"
+	cliopts "github.com/docker/cli/opts"
 	"github.com/malice-plugins/pkgs/utils"
 	"github.com/maliceio/malice/config"
 	"github.com/maliceio/malice/malice/docker/client"
@@ -227,7 +227,7 @@ func (plugin Plugin) UpdatePluginFromRepository(docker *client.Docker) {
 	tags := []string{"malice/" + plugin.Name + ":latest"}
 
 	if config.Conf.Proxy.Enable {
-		buildArgs = runconfigopts.ConvertKVStringsToMapWithNil([]string{
+		buildArgs = cliopts.ConvertKVStringsToMapWithNil([]string{
 			"HTTP_PROXY=" + config.Conf.Proxy.HTTP,
 			"HTTPS_PROXY=" + config.Conf.Proxy.HTTPS,
 		})
@@ -235,7 +235,7 @@ func (plugin Plugin) UpdatePluginFromRepository(docker *client.Docker) {
 		buildArgs = nil
 	}
 
-	labels := runconfigopts.ConvertKVStringsToMap([]string{"io.malice.plugin.installed.from=repository"})
+	labels := cliopts.ConvertKVStringsToMap([]string{"io.malice.plugin.installed.from=repository"})
 
 	image.Build(docker, plugin.Repository, tags, buildArgs, labels, quiet)
 }

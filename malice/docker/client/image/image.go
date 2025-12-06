@@ -15,15 +15,13 @@ import (
 
 	"github.com/docker/docker/api/types"
 	registrytypes "github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/builder/dockerignore"
-	"github.com/docker/docker/cli/command/image/build"
+	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
+	"github.com/docker/cli/cli/command/image/build"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/fileutils"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/pkg/progress"
 	"github.com/docker/docker/pkg/streamformatter"
-	"github.com/docker/docker/pkg/stringutils"
-	"github.com/docker/docker/pkg/urlutil"
 	"github.com/docker/docker/registry"
 	"github.com/maliceio/malice/config"
 	"github.com/maliceio/malice/malice/docker/client"
@@ -31,6 +29,24 @@ import (
 
 	log "github.com/sirupsen/logrus"
 )
+
+// isURL checks if the provided string is an HTTP(S) URL
+// Replaced deprecated github.com/docker/docker/pkg/urlutil
+func isURL(str string) bool {
+	return strings.HasPrefix(str, "http://") || strings.HasPrefix(str, "https://")
+}
+
+// isGitURL checks if the provided string is a Git repository URL
+// Replaced deprecated github.com/docker/docker/pkg/urlutil
+func isGitURL(str string) bool {
+	if strings.HasPrefix(str, "git://") || strings.HasPrefix(str, "git@") {
+		return true
+	}
+	if strings.HasPrefix(str, "github.com/") || strings.HasPrefix(str, "https://github.com/") {
+		return true
+	}
+	return strings.HasSuffix(str, ".git")
+}
 
 // Pull pulls docker image:tag
 // TODO: add trusted pull for offcial malice plugins
@@ -65,9 +81,9 @@ func Build(docker *client.Docker, repository string, tags []string, buildArgs ma
 	switch {
 	case repository == "-":
 		buildCtx, relDockerfile, err = build.GetContextFromReader(os.Stdin, "")
-	case urlutil.IsGitURL(repository):
+	case isGitURL(repository):
 		tempDir, relDockerfile, err = build.GetContextFromGitURL(repository, "")
-	case urlutil.IsURL(repository):
+	case isURL(repository):
 		buildCtx, relDockerfile, err = build.GetContextFromURL(progBuff, repository, "")
 	default:
 		_, relDockerfile, err = build.GetContextFromLocalDir(repository, "")
@@ -257,7 +273,11 @@ func Search(docker *client.Docker, term string) error {
 		desc := strings.Replace(res.Description, "\n", " ", -1)
 		desc = strings.Replace(desc, "\r", " ", -1)
 		if !opts.noTrunc && len(desc) > 45 {
-			desc = stringutils.Truncate(desc, 42) + "..."
+			// Truncate to 42 characters (replaced deprecated stringutils.Truncate)
+			if len(desc) > 42 {
+				desc = desc[:42]
+			}
+			desc = desc + "..."
 		}
 		fmt.Fprintf(w, "%s\t%s\t%d\t", res.Name, desc, res.StarCount)
 		if res.IsOfficial {

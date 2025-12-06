@@ -7,7 +7,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	volumetypes "github.com/docker/docker/api/types/volume"
-	runconfigopts "github.com/docker/docker/runconfig/opts"
+	"github.com/docker/cli/opts"
 	"github.com/maliceio/malice/config"
 	"github.com/maliceio/malice/malice/docker/client"
 	"context"
@@ -26,7 +26,7 @@ func Create(docker *client.Docker, name, driver string, labels []string) error {
 		Driver: driver,
 		// DriverOpts: opts.driverOpts.GetAll(),
 		Name:   name,
-		Labels: runconfigopts.ConvertKVStringsToMap(labels),
+		Labels: opts.ConvertKVStringsToMap(labels),
 	}
 
 	vol, err := docker.Client.VolumeCreate(context.Background(), volReq)

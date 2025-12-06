@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/docker/docker/api/errors"
+	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/api/server/httputils"
 	"github.com/docker/docker/api/server/middleware"
 	"github.com/docker/docker/api/server/router"
@@ -176,7 +176,7 @@ func (s *Server) createMux() *mux.Router {
 		}
 	}
 
-	err := errors.NewRequestNotFoundError(fmt.Errorf("page not found"))
+	err := errdefs.NotFound(fmt.Errorf("page not found"))
 	notFoundHandler := httputils.MakeErrorHandler(err)
 	m.HandleFunc(versionMatcher+"/{path:.*}", notFoundHandler)
 	m.NotFoundHandler = notFoundHandler
