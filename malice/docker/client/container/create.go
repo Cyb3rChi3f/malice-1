@@ -14,7 +14,7 @@ import (
 	"github.com/docker/docker/registry"
 	"github.com/maliceio/malice/malice/docker/client"
 	er "github.com/maliceio/malice/malice/errors"
-	"golang.org/x/net/context"
+	"context"
 )
 
 func pullImage(ctx context.Context, docker *client.Docker, image string, out io.Writer) error {
@@ -127,11 +127,11 @@ func createContainer(docker *client.Docker, ctx context.Context, config *cont.Co
 	// }
 
 	//create the container
-	response, err := docker.Client.ContainerCreate(ctx, config, hostConfig, networkingConfig, name)
+	response, err := docker.Client.ContainerCreate(ctx, config, hostConfig, networkingConfig, nil, name)
 	er.CheckError(err)
 	//if image not found try to pull it
 	if err != nil {
-		if apiclient.IsErrImageNotFound(err) {
+		if apiclient.IsErrNotFound(err) {
 			// fmt.Fprintf(stderr, "Unable to find image '%s' locally\n", ref.String())
 
 			// we don't want to write to stdout anything apart from container.ID
@@ -145,7 +145,7 @@ func createContainer(docker *client.Docker, ctx context.Context, config *cont.Co
 			// }
 			// Retry
 			var retryErr error
-			response, retryErr = docker.Client.ContainerCreate(ctx, config, hostConfig, networkingConfig, name)
+			response, retryErr = docker.Client.ContainerCreate(ctx, config, hostConfig, networkingConfig, nil, name)
 			if retryErr != nil {
 				return cont.ContainerCreateCreatedBody{}, retryErr
 			}

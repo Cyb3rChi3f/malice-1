@@ -9,12 +9,12 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
-	"github.com/docker/docker/cli"
+	"github.com/docker/cli/cli"
 	"github.com/docker/go-connections/nat"
 
 	"github.com/maliceio/malice/malice/docker/client"
 	er "github.com/maliceio/malice/malice/errors"
-	"golang.org/x/net/context"
+	"context"
 )
 
 type runOptions struct {

@@ -1,19 +1,19 @@
-FROM alpine:3.8
+FROM alpine:3.19
 
 LABEL maintainer "https://github.com/blacktop"
 
 ARG VERSION
 
 RUN apk add --no-cache file tini ca-certificates
-RUN apk add --no-cache -t build-deps go git mercurial build-base gcc file-dev libc-dev dep \
+RUN apk add --no-cache -t build-deps go git build-base gcc file-dev libc-dev \
   && set -x \
   && echo "Building malice Go binary..." \
   && git clone https://github.com/maliceio/malice.git /go/src/github.com/maliceio/malice \
   && cd /go/src/github.com/maliceio/malice \
   && export GOPATH=/go \
   && go version \
-  && dep ensure \
-  && go build -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildTime=$(date -u +%Y%m%d)" -o /bin/malice \
+  && go mod download \
+  && go build -ldflags "-s -w -X main.version=${VERSION} -X main.date=$(date -u +%Y%m%d)" -o /bin/malice \
   && echo "Copy malice config files..." \
   && mkdir /malice \
   && cp /go/src/github.com/maliceio/malice/config/config.toml /malice \

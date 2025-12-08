@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/mail"
@@ -61,7 +60,7 @@ func CopyFile(dst, src string) error {
 // GetSHA256 calculates a file's sha256sum
 func GetSHA256(name string) string {
 
-	dat, err := ioutil.ReadFile(name)
+	dat, err := os.ReadFile(name)
 	Assert(err)
 
 	h256 := sha256.New()
@@ -123,7 +122,7 @@ func ParseMail(r *http.Request) (email.Email, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	body, err := ioutil.ReadAll(m.Body)
+	body, err := io.ReadAll(m.Body)
 	e.HTML = body
 	return e, err
 }

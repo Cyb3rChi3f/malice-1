@@ -11,15 +11,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/crackcomm/go-clitable"
+	log "github.com/sirupsen/logrus"
+	"github.com/olekukonko/tablewriter"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -61,7 +60,7 @@ func (file *File) Init() {
 	file.GetSize()
 
 	// Read in file data
-	dat, err := ioutil.ReadFile(file.Path)
+	dat, err := os.ReadFile(file.Path)
 	utils.Assert(err)
 
 	file.GetMD5(dat)
@@ -96,7 +95,7 @@ func GetMimeType(docker *client.Docker, arg string) (string, error) {
 	}
 	networkingConfig := &network.NetworkingConfig{}
 
-	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, "getmimetype")
+	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, nil, "getmimetype")
 	if err != nil {
 		return "", err
 	}
@@ -172,7 +171,7 @@ func GetFileInfo(docker *client.Docker, arg string, search string) (string, erro
 	}
 	networkingConfig := &network.NetworkingConfig{}
 
-	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, "")
+	contResponse, err := docker.Client.ContainerCreate(context.Background(), createContConf, hostConfig, networkingConfig, nil, "")
 	if err != nil {
 		return "", err
 	}
@@ -237,7 +236,7 @@ func (file *File) CopyToSamples() error {
 
 	// Make .malice directory if it doesn't exist
 	if _, err := os.Stat(maldirs.GetSampledsDir()); os.IsNotExist(err) {
-		os.MkdirAll(maldirs.GetSampledsDir(), 0777)
+		os.MkdirAll(maldirs.GetSampledsDir(), 0700)
 	}
 
 	if _, err := os.Stat(path.Join(maldirs.GetSampledsDir(), file.SHA256)); os.IsNotExist(err) {
@@ -387,37 +386,45 @@ func (file *File) ToJSON() []byte {
 // ToMarkdownTable converts File object Markdown table
 func (file *File) ToMarkdownTable() {
 	fmt.Println("#### File")
-	table := clitable.New([]string{"Field", "Value"})
-	table.AddRow(map[string]interface{}{"Field": "Name", "Value": file.Name})
-	table.AddRow(map[string]interface{}{"Field": "Path", "Value": file.Path})
-	table.AddRow(map[string]interface{}{"Field": "Size", "Value": file.Size})
-	table.AddRow(map[string]interface{}{"Field": "MD5", "Value": file.MD5})
-	table.AddRow(map[string]interface{}{"Field": "SHA1", "Value": file.SHA1})
-	table.AddRow(map[string]interface{}{"Field": "SHA256", "Value": file.SHA256})
-	// table.AddRow(map[string]interface{}{"Field": "SHA512", "Value": file.SHA512})
-	// table.AddRow(map[string]interface{}{"Field": "Mime", "Value": file.Mime})
-	// table.AddRow(map[string]interface{}{"Field": "Magic", "Value": file.Magic})
-	table.Markdown = true
-	table.Print()
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Field", "Value"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+
+	table.Append([]string{"Name", file.Name})
+	table.Append([]string{"Path", file.Path})
+	table.Append([]string{"Size", file.Size})
+	table.Append([]string{"MD5", file.MD5})
+	table.Append([]string{"SHA1", file.SHA1})
+	table.Append([]string{"SHA256", file.SHA256})
+	// table.Append([]string{"SHA512", file.SHA512})
+	// table.Append([]string{"Mime", file.Mime})
+	// table.Append([]string{"Magic", file.Magic})
+
+	table.Render()
 }
 
 // PrintFileDetails prints file details
 func (file *File) PrintFileDetails() {
-	table := clitable.New([]string{"Field", "Value"})
-	table.AddRow(map[string]interface{}{"Field": "Name", "Value": file.Name})
-	table.AddRow(map[string]interface{}{"Field": "Path", "Value": file.Path})
-	// table.AddRow(map[string]interface{}{"Field": "Valid", "Value": file.Valid})
-	table.AddRow(map[string]interface{}{"Field": "Size", "Value": file.Size})
-	// table.AddRow(map[string]interface{}{"Field": "CRC32", "Value": file.CRC32})
-	table.AddRow(map[string]interface{}{"Field": "MD5", "Value": file.MD5})
-	table.AddRow(map[string]interface{}{"Field": "SHA1", "Value": file.SHA1})
-	table.AddRow(map[string]interface{}{"Field": "SHA256", "Value": file.SHA256})
-	table.AddRow(map[string]interface{}{"Field": "SHA512", "Value": file.SHA512})
-	// table.AddRow(map[string]interface{}{"Field": "Ssdeep", "Value": file.Ssdeep})
-	// table.AddRow(map[string]interface{}{"Field": "Mime", "Value": file.Mime})
-	// table.AddRow(map[string]interface{}{"Field": "Magic", "Value": file.Magic})
-	table.Markdown = true
-	table.Print()
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Field", "Value"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+
+	table.Append([]string{"Name", file.Name})
+	table.Append([]string{"Path", file.Path})
+	// table.Append([]string{"Valid", fmt.Sprintf("%v", file.Valid)})
+	table.Append([]string{"Size", file.Size})
+	// table.Append([]string{"CRC32", file.CRC32})
+	table.Append([]string{"MD5", file.MD5})
+	table.Append([]string{"SHA1", file.SHA1})
+	table.Append([]string{"SHA256", file.SHA256})
+	table.Append([]string{"SHA512", file.SHA512})
+	// table.Append([]string{"Ssdeep", file.Ssdeep})
+	// table.Append([]string{"Mime", file.Mime})
+	// table.Append([]string{"Magic", file.Magic})
+
+	table.Render()
 	// fmt.Println("Name: ", file.Name)
 	// fmt.Println("Path: ", file.Path)
 	// fmt.Println("Valid: ", file.Valid)

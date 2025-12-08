@@ -1,20 +1,20 @@
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/api/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/docker/docker/errdefs"
 	"github.com/docker/docker/api/server/httputils"
 	"github.com/docker/docker/api/server/middleware"
 	"github.com/docker/docker/api/server/router"
 	"github.com/docker/docker/dockerversion"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 )
 
 // versionMatcher defines a variable matcher to be parsed by the router
@@ -176,7 +176,7 @@ func (s *Server) createMux() *mux.Router {
 		}
 	}
 
-	err := errors.NewRequestNotFoundError(fmt.Errorf("page not found"))
+	err := errdefs.NotFound(fmt.Errorf("page not found"))
 	notFoundHandler := httputils.MakeErrorHandler(err)
 	m.HandleFunc(versionMatcher+"/{path:.*}", notFoundHandler)
 	m.NotFoundHandler = notFoundHandler

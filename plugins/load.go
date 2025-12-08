@@ -1,12 +1,11 @@
 package plugins
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 
 	"github.com/BurntSushi/toml"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	er "github.com/maliceio/malice/malice/errors"
 	"github.com/maliceio/malice/malice/maldirs"
 )
@@ -60,9 +59,9 @@ func Load() {
 	}
 	if _, err = toml.Decode(string(tomlData), &Plugs); err == nil {
 		// Create .malice folder in the users home directory
-		er.CheckError(os.MkdirAll(maldirs.GetPluginsDir(), 0777))
+		er.CheckError(os.MkdirAll(maldirs.GetPluginsDir(), 0700))
 		// Create the plugins config in the .malice folder
-		er.CheckError(ioutil.WriteFile(configPath, tomlData, 0644))
+		er.CheckError(os.WriteFile(configPath, tomlData, 0644))
 		log.Debug("Malice plugins loaded from plugins/bindata.go")
 	}
 	er.CheckError(err)

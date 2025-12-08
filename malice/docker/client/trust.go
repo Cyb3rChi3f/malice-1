@@ -16,9 +16,9 @@ package client
 // 	"strconv"
 // 	"time"
 
-// 	"golang.org/x/net/context"
+// 	"context"
 
-// 	"github.com/Sirupsen/logrus"
+// 	"github.com/sirupsen/logrus"
 // 	"github.com/docker/distribution/digest"
 // 	"github.com/docker/distribution/registry/client/auth"
 // 	"github.com/docker/distribution/registry/client/transport"

@@ -46,22 +46,75 @@ services:
       - ../data/samples:/malware:ro
     networks:
       - malice
-  # ELK
-  elk:
-    image: blacktop/elk
+  # ELASTICSEARCH
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=malice-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
-      - "80:80"
+      - "9300:9300"
     networks:
       - malice
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # KIBANA
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.3
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=kibana
+      - SERVER_HOST=0.0.0.0
+    ports:
+      - "80:5601"
+    networks:
+      - malice
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   # LOGSTASH
   logstash:
-    build: ./logstash
-    links:
-      - rethink
-      - elk:elasticsearch
+    image: docker.elastic.co/logstash/logstash:8.11.3
+    container_name: logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - xpack.monitoring.enabled=false
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
     networks:
       - malice
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
   # RETHINKDB
   rethink:
     container_name: rethink
@@ -75,8 +128,8 @@ services:
       - malice
 
 volumes:
-  ? malice
-  ? es_data
+  malice:
+  es_data:
 
 networks:
   malice:

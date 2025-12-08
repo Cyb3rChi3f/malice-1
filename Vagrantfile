@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/noble64"
   # vagrant plugin install vagrant-disksize
   config.disksize.size = '25GB'
   # Disable automatic box update checking. If you disable this, then
@@ -70,40 +70,40 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     echo "Installing Docker================================"
-    sudo apt-get install apt-transport-https ca-certificates
-    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-    echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" | sudo tee -a /etc/apt/sources.list.d/docker.list
     sudo apt-get update -q
-    sudo apt-get install -y linux-image-extra-$(uname -r)
-    sudo apt-get install -y docker-engine
+    sudo apt-get install -y ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -q
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo usermod -aG docker vagrant
-    echo "Installing docker-compose ======================="
-    curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
+    echo "Installing docker-compose (standalone) ========="
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
     echo "Installing docker-clean ========================="
     curl -s https://raw.githubusercontent.com/ZZROTDesign/docker-clean/v2.0.4/docker-clean | sudo tee /usr/local/bin/docker-clean > /dev/null
     sudo chmod +x /usr/local/bin/docker-clean
     echo "Installing Golang ==============================="
-    export GO_VERSION=1.11.2
+    export GO_VERSION=1.21.5
     export ARCH="$(dpkg --print-architecture)"
-    wget https://storage.googleapis.com/golang/go$GO_VERSION.linux-$ARCH.tar.gz -O /tmp/go.tar.gz
-    tar -C /usr/local -xzf /tmp/go.tar.gz
+    wget https://go.dev/dl/go$GO_VERSION.linux-$ARCH.tar.gz -O /tmp/go.tar.gz
+    sudo tar -C /usr/local -xzf /tmp/go.tar.gz
     export PATH=$PATH:/usr/local/go/bin
     export GOPATH=/home/vagrant/go
     echo 'export PATH=$PATH:/usr/local/go/bin' >> /home/vagrant/.bashrc
     echo 'export GOPATH=/home/vagrant/go' >> /home/vagrant/.bashrc
     echo 'export PATH=$PATH:/home/vagrant/go/bin' >> /home/vagrant/.bashrc
-    cd /home/vagrant/go/src/github.com/maliceio/malice
-    /home/vagrant/go/bin/dep ensure
+    mkdir -p /home/vagrant/go/src/github.com/maliceio/malice
     echo "Installing Malice ==============================="
     export MALICE_VERSION=0.3.25
     sudo apt-get install -y libmagic-dev build-essential
     wget https://github.com/maliceio/malice/releases/download/v${MALICE_VERSION}/malice_${MALICE_VERSION}_linux_amd64.deb -O /tmp/malice_${MALICE_VERSION}_linux_amd64.deb
     sudo dpkg -i /tmp/malice_${MALICE_VERSION}_linux_amd64.deb
     echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
-    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/go get -u github.com/derekparker/delve/cmd/dlv'
-    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/go get -u github.com/golang/dep/cmd/dep'
-    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/go get -v github.com/maliceio/malice'
-    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/dep ensure github.com/maliceio/malice'
+    sudo sysctl -w vm.max_map_count=262144
+    sudo -H -u vagrant bash -c 'GOPATH=/home/vagrant/go /usr/local/go/bin/go install github.com/go-delve/delve/cmd/dlv@latest'
+    sudo -H -u vagrant bash -c 'cd /home/vagrant/go/src/github.com/maliceio/malice && GOPATH=/home/vagrant/go /usr/local/go/bin/go mod download'
   SHELL
 end
